@@ -1,4 +1,3 @@
-import { StreamViewType } from '@aws-sdk/client-dynamodb';
 import type { AWS } from '@serverless/typescript';
 
 const dynamoResources: AWS['resources']['Resources'] = {

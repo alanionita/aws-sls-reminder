@@ -6,7 +6,7 @@ import dynamoResources from './serverless/dynamo';
 const serverlessConfiguration: AWS = {
   service: 'reminder',
   frameworkVersion: '3',
-  plugins: ['serverless-esbuild'],
+  plugins: ['serverless-esbuild', 'serverless-iam-roles-per-function'],
   provider: {
     name: 'aws',
     runtime: 'nodejs20.x',

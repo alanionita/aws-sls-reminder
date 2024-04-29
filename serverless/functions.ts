@@ -28,6 +28,14 @@ const functions: AWS['functions'] = {
                     ]
                 },
             }
+        ],
+        //@ts-expect-error
+        iamRoleStatements: [
+            {
+                Effect: 'Allow',
+                Action: ['ses:sendEmail', 'sns:Publish'],
+                Resource: '*'
+            },
         ]
     }
 }
