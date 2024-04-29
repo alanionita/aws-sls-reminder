@@ -1,5 +1,6 @@
 import { formatJSONResponse } from "@libs/apiGw";
 import { APIGatewayProxyEvent } from "aws-lambda";
+import { ulid } from 'ulid'
 import { dynamo } from "@libs/dynamo";
 
 export async function handler(event: APIGatewayProxyEvent) {
@@ -10,7 +11,6 @@ export async function handler(event: APIGatewayProxyEvent) {
 
         const body = JSON.parse(event.body);
 
-        // TODO: validate email and phoneNo
         const { email, phoneNo, reminder, reminderDate } = body
 
         const validationErrors = validateInputs({ email, phoneNo, reminder, reminderDate });
@@ -19,15 +19,22 @@ export async function handler(event: APIGatewayProxyEvent) {
             return validationErrors
         }
 
-        const ddbData = {
+        const userId = email || phoneNo;
 
+        const ddbData = {   
+            ...body,
+            id: ulid(),
+            TTL: reminderDate / 1000,
+            pk: userId,
+            sk: reminderDate.toString()
         }
 
         await dynamo.write(ddbData, tableName);
 
         return formatJSONResponse({
             data: {
-
+                message: `Reminder is set for ${new Date(reminderDate).toDateString()}`,
+                id: ddbData.id
             },
         })
     } catch (err) {
@@ -45,6 +52,7 @@ export async function handler(event: APIGatewayProxyEvent) {
 function validateInputs({ email, phoneNo, reminder, reminderDate }: {
     email?: string, phoneNo?: string, reminder: string, reminderDate: string
 }) {
+     // TODO: validate email and phoneNo types etc
     if (!email && !phoneNo) {
         return formatJSONResponse({
             statusCode: 400,
