@@ -25,12 +25,6 @@ const serverlessConfiguration: AWS = {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
       NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
       REMINDER_TABLE: '${self:custom.reminderTable}',
-      BASE_URL: {
-        'Fn::Join': [
-          '',
-          ['https://', { Ref: 'HttpApi' }, '.execute-api.${self:provider.region}.amazonaws.com']
-        ]
-      }
     },
   },
   // import the function via paths
@@ -49,7 +43,7 @@ const serverlessConfiguration: AWS = {
       minify: false,
       sourcemap: true,
       exclude: ['aws-sdk'],
-      target: 'node14',
+      target: 'node20',
       define: { 'require.resolve': undefined },
       platform: 'node',
       concurrency: 10,
