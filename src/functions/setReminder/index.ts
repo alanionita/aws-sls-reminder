@@ -10,6 +10,35 @@ export async function handler(event: APIGatewayProxyEvent) {
 
         const body = JSON.parse(event.body);
 
+        // TODO: validate email and phoneNo
+        const { email, phoneNo, reminder, reminderDate } = body
+
+        if (!email && !phoneNo) {
+            return formatJSONResponse({
+                statusCode: 400,
+                data: {
+                    message: 'Email or Phone Number required!'
+                }
+            })
+        }
+
+        if (!reminder) {
+            return formatJSONResponse({
+                statusCode: 400,
+                data: {
+                    message: 'Reminder required!'
+                }
+            })
+        }
+
+        if (!reminderDate) {
+            return formatJSONResponse({
+                statusCode: 400,
+                data: {
+                    message: 'Reminder date required!'
+                }
+            })
+        }
 
         const ddbData = {
 
