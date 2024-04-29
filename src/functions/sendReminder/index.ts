@@ -2,8 +2,10 @@ import { DynamoDBStreamEvent } from "aws-lambda";
 import { unmarshall } from "@aws-sdk/util-dynamodb"
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { SESClient, SendEmailCommand, SendEmailCommandInput } from '@aws-sdk/client-ses';
+import { PublishCommand, PublishCommandInput, SNSClient } from "@aws-sdk/client-sns";
 
 const sesClient = new SESClient();
+const snsClient = new SNSClient();
 
 export async function handler(event: DynamoDBStreamEvent) {
     try {
@@ -24,7 +26,7 @@ export async function handler(event: DynamoDBStreamEvent) {
     }
 }
 
-async function sendEmail (email: string, reminder: string) {
+async function sendEmail(email: string, reminder: string) {
     const params: SendEmailCommandInput = {
         Source: 'YOUR_SOURCE_EMAIL',
         Destination: {
@@ -47,6 +49,20 @@ async function sendEmail (email: string, reminder: string) {
     const command = new SendEmailCommand(params);
 
     const res = await sesClient.send(command);
+
+    return res.MessageId
+}
+
+async function sendSMS(phoneNo: string, reminder: string) {
+
+    const params: PublishCommandInput = {
+        Message: reminder,
+        PhoneNumber: phoneNo
+    }
+
+    const command = new PublishCommand(params);
+
+    const res = await snsClient.send(command);
 
     return res.MessageId
 }
