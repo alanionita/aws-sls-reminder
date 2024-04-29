@@ -1,6 +1,9 @@
 import { DynamoDBStreamEvent } from "aws-lambda";
 import { unmarshall } from "@aws-sdk/util-dynamodb"
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
+import { SESClient, SendEmailCommand, SendEmailCommandInput } from '@aws-sdk/client-ses';
+
+const sesClient = new SESClient();
 
 export async function handler(event: DynamoDBStreamEvent) {
     try {
@@ -19,4 +22,31 @@ export async function handler(event: DynamoDBStreamEvent) {
         console.error(err.message)
         console.info(JSON.stringify(err.stack))
     }
+}
+
+async function sendEmail (email: string, reminder: string) {
+    const params: SendEmailCommandInput = {
+        Source: 'YOUR_SOURCE_EMAIL',
+        Destination: {
+            ToAddresses: [email]
+        },
+        Message: {
+            Body: {
+                Text: {
+                    Charset: 'UTF-8',
+                    Data: reminder
+                }
+            },
+            Subject: {
+                Charset: 'UTF-8',
+                Data: "Your reminder ->"
+            }
+        }
+    }
+
+    const command = new SendEmailCommand(params);
+
+    const res = await sesClient.send(command);
+
+    return res.MessageId
 }
