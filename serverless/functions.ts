@@ -37,6 +37,17 @@ const functions: AWS['functions'] = {
                 Resource: '*'
             },
         ]
+    },
+    getReminder: {
+        handler: "src/functions/getReminder/index.handler",
+        events: [
+            {
+                httpApi: {
+                    path: '/{userId}',
+                    method: "get"
+                }
+            }
+        ]
     }
 }
 
