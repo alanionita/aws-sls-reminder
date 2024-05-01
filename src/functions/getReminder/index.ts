@@ -1,21 +1,30 @@
 import { formatJSONResponse } from "@libs/apiGw";
 import { APIGatewayProxyEvent } from "aws-lambda";
-import { ulid } from 'ulid'
 import { dynamo } from "@libs/dynamo";
 
 export async function handler(event: APIGatewayProxyEvent) {
     try {
         const tableName = process.env?.REMINDER_TABLE;
+        const GSI_NAME = 'index1';
 
         if (!tableName) throw Error('Table name value cannot be found!')
 
-        const body = JSON.parse(event.body);
+        const { userId } = event.pathParameters || {}
+
+        if (!userId) {
+            return formatJSONResponse({
+                statusCode: 400,
+                data: {
+                    message: 'Missing userId in path'
+                }
+            })
+        }
+
+        const data = await dynamo.query({ tableName, index: GSI_NAME, pkValue: userId });
 
 
         return formatJSONResponse({
-            data: {
-            
-            },
+            data,
         })
     } catch (err) {
         console.error(err.message)
