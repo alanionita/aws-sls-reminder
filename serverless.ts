@@ -27,6 +27,7 @@ const serverlessConfiguration: AWS = {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
       NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
       REMINDER_TABLE: '${self:custom.reminderTable}',
+      SES_ADDR: '${self:custom.secrets.SES_ADDR}'
     },
   },
   // import the function via paths
@@ -40,6 +41,7 @@ const serverlessConfiguration: AWS = {
   package: { individually: true },
   custom: {
     reminderTable: '${sls:stage}-reminder-table',
+    secrets: '${file(.secrets/${sls:stage}.json)}',
     esbuild: {
       bundle: true,
       minify: false,

@@ -9,6 +9,11 @@ const snsClient = new SNSClient();
 
 export async function handler(event: DynamoDBStreamEvent) {
     try {
+        const sesSenderAddr = process.env?.SES_ADDR || null;
+        if (!sesSenderAddr) {
+            throw Error('Error (env): SES sender address not found')
+        }
+
         const reminderPromises = event.Records.map(async record => {
             const data = unmarshall(record.dynamodb.OldImage as Record<string, AttributeValue>)
             const { email, phoneNo, reminder } = data;
@@ -16,7 +21,7 @@ export async function handler(event: DynamoDBStreamEvent) {
                 await sendSMS(phoneNo, reminder);
             }
             if (email) {
-                await sendEmail(email, reminder);
+                await sendEmail({ email, reminder, fromAddress: sesSenderAddr });
             }
         })
         await Promise.all(reminderPromises)
@@ -26,9 +31,9 @@ export async function handler(event: DynamoDBStreamEvent) {
     }
 }
 
-async function sendEmail(email: string, reminder: string) {
+async function sendEmail({ email, reminder, fromAddress }: { email: string, reminder: string, fromAddress: string }) {
     const params: SendEmailCommandInput = {
-        Source: 'YOUR_SOURCE_EMAIL',
+        Source: fromAddress,
         Destination: {
             ToAddresses: [email]
         },
@@ -41,7 +46,7 @@ async function sendEmail(email: string, reminder: string) {
             },
             Subject: {
                 Charset: 'UTF-8',
-                Data: "Your reminder ->"
+                Data: "ReminderApp: Your reminder ->"
             }
         }
     }
